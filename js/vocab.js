@@ -7,6 +7,28 @@ let quizQueue = [];
 let quizIndex = 0;
 let quizScore = 0;
 
+const AUTO_LOAD_PATH = 'data/vocab.csv';
+
+// data/vocab.csv 파일이 있으면 자동으로 불러온다.
+// (localStorage에 이미 단어가 저장돼 있으면 건드리지 않는다 - 사용자가 업로드한 걸 우선함)
+async function tryAutoLoadCSV() {
+  if (vocabList.length > 0) return;
+  if (localStorage.getItem('jp-vocab-user-cleared') === '1') return;
+  try {
+    const res = await fetch(AUTO_LOAD_PATH, { cache: 'no-store' });
+    if (!res.ok) return;
+    const text = await res.text();
+    const parsed = csvToVocabList(text);
+    if (parsed.length > 0) {
+      vocabList = parsed;
+      saveVocabList(vocabList);
+      refreshDataStatus();
+    }
+  } catch (e) {
+    // 파일이 없거나 로컬에서 file:// 로 열어서 fetch가 막힌 경우 - 조용히 무시
+  }
+}
+
 // ---------- 초기화 ----------
 
 function refreshDataStatus() {
@@ -49,6 +71,7 @@ document.getElementById('clear-data-btn').addEventListener('click', () => {
   if (!confirm('저장된 단어를 모두 지울까요?')) return;
   vocabList = [];
   saveVocabList(vocabList);
+  localStorage.setItem('jp-vocab-user-cleared', '1');
   refreshDataStatus();
 });
 
@@ -86,14 +109,17 @@ function renderCard() {
   if (deck.length === 0) return;
   const item = vocabList[deck[deckIndex]];
   const wordEl = document.getElementById('card-word');
+  const subEl = document.getElementById('card-sub');
   const labelEl = document.getElementById('face-label');
 
   if (showingFront) {
-    labelEl.textContent = '일본어';
+    labelEl.textContent = item.pos || '일본어';
     wordEl.textContent = item.word;
+    subEl.textContent = item.kanji ? `한자: ${item.kanji}` : '';
   } else {
     labelEl.textContent = '뜻';
-    wordEl.textContent = item.reading ? `${item.meaning} (${item.reading})` : item.meaning;
+    wordEl.textContent = item.meaning;
+    subEl.textContent = item.kanji ? `${item.word}${item.kanji ? ' · ' + item.kanji : ''}` : item.word;
   }
   document.getElementById('deck-progress').textContent = `${deckIndex + 1} / ${deck.length}`;
 }
@@ -160,7 +186,8 @@ function renderQuizQuestion() {
   content.innerHTML = `
     <div style="color:var(--ink-soft); font-size:0.9rem; margin-bottom:10px;">${quizIndex + 1} / ${quizQueue.length}</div>
     <div class="quiz-question">
-      <div class="prompt">${item.word}${item.reading ? ` <span style="color:var(--ink-faint); font-size:1rem;">(${item.reading})</span>` : ''}</div>
+      ${item.pos ? `<div style="color:var(--ink-faint); font-size:0.8rem; margin-bottom:4px;">${item.pos}</div>` : ''}
+      <div class="prompt">${item.word}${item.kanji ? ` <span style="color:var(--ink-faint); font-size:1rem;">(${item.kanji})</span>` : ''}</div>
       <div class="quiz-choices">
         ${choices.map(c => `<button class="choice-btn" data-value="${encodeURIComponent(c)}">${c}</button>`).join('')}
       </div>
@@ -191,3 +218,4 @@ function renderQuizQuestion() {
 // ---------- 시작 ----------
 
 refreshDataStatus();
+tryAutoLoadCSV();

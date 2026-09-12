@@ -26,7 +26,10 @@
       </label>
       <button class="btn" id="clear-data-btn">데이터 지우기</button>
     </div>
-    <div class="status" id="data-status">아직 불러온 단어가 없어요. CSV 파일(일본어, 뜻, 읽는법 순서)을 올려주세요.</div>
+    <div class="status" id="data-status">단어를 불러오는 중이에요…</div>
+    <div class="status" style="margin-top:4px;">
+      팁: <code>data/vocab.csv</code> 파일을 리포지토리에 올려두면 접속할 때 자동으로 불러와요.
+    </div>
   </div>
 
   <div class="tabs">
@@ -45,6 +48,7 @@
         <div class="flashcard" id="flashcard">
           <div class="face-label" id="face-label">일본어</div>
           <div class="word" id="card-word">言葉</div>
+          <div class="sub" id="card-sub"></div>
           <div class="hint">카드를 클릭하면 뒤집혀요</div>
         </div>
         <div class="btn-row">

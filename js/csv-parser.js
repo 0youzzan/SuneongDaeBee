@@ -58,25 +58,42 @@ function parseCSV(text) {
 }
 
 // CSV 텍스트를 어휘 배열로 변환한다.
-// 기대하는 열 순서: 일본어, 뜻, (선택) 읽는법
-// 첫 줄이 헤더로 보이면(예: '일본어' 포함) 건너뛴다.
+// 지원하는 열 구성:
+//   4열: 히라가나/가타카나, 한자, 품사, 한국어해석  (예: japanese_vocabulary.csv)
+//   3열: 일본어, 뜻, 읽는법
+//   2열: 일본어, 뜻
+// 첫 줄의 첫 칸에 히라가나/가타카나/한자가 없으면 헤더로 보고 건너뛴다.
 function csvToVocabList(text) {
+  text = text.replace(/^\uFEFF/, ''); // 엑셀에서 저장한 CSV의 BOM 제거
   const rows = parseCSV(text);
   if (rows.length === 0) return [];
 
+  const jpPattern = /[\u3040-\u30FF\u4E00-\u9FFF]/; // 히라가나/가타카나/한자
   let startIdx = 0;
-  const firstRow = rows[0].map(c => c.trim());
-  if (firstRow.some(c => /단어|일본어|뜻|word|meaning/i.test(c))) {
-    startIdx = 1;
+  const firstCell = (rows[0][0] || '').trim();
+  if (!jpPattern.test(firstCell)) {
+    startIdx = 1; // 첫 줄이 헤더로 보임
   }
 
   const list = [];
   for (let i = startIdx; i < rows.length; i++) {
     const cols = rows[i].map(c => c.trim());
-    if (cols.length < 2) continue;
-    const [word, meaning, reading] = cols;
-    if (!word || !meaning) continue;
-    list.push({ word, meaning, reading: reading || '' });
+    if (cols.length === 0 || !cols[0]) continue;
+
+    if (cols.length >= 4) {
+      // 히라가나/가타카나, 한자, 품사, 한국어해석
+      const [word, kanji, pos, meaning] = cols;
+      if (!word || !meaning) continue;
+      list.push({ word, kanji: kanji || '', pos: pos || '', meaning });
+    } else if (cols.length === 3) {
+      const [word, meaning, reading] = cols;
+      if (!word || !meaning) continue;
+      list.push({ word, kanji: reading || '', pos: '', meaning });
+    } else if (cols.length === 2) {
+      const [word, meaning] = cols;
+      if (!word || !meaning) continue;
+      list.push({ word, kanji: '', pos: '', meaning });
+    }
   }
   return list;
 }
