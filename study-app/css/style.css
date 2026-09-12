@@ -1,0 +1,407 @@
+@import url('https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@500;700&family=Pretendard&display=swap');
+
+:root {
+  --paper: #f2f0ea;
+  --paper-line: #d9d3c5;
+  --card: #fbfaf7;
+  --ink: #21252b;
+  --ink-soft: #5d6067;
+  --ink-faint: #9a9689;
+
+  --vocab: #2c3e70;
+  --vocab-soft: #e7eaf3;
+
+  --csat: #b23a2f;
+  --csat-soft: #f5e4e1;
+
+  --radius: 4px;
+  --shadow: 0 1px 0 rgba(33,37,43,0.06);
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: 'Pretendard', -apple-system, 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
+  line-height: 1.55;
+}
+
+h1, h2, h3 {
+  font-family: 'Noto Serif KR', 'Batang', serif;
+  font-weight: 700;
+  margin: 0 0 0.4em 0;
+  letter-spacing: -0.01em;
+}
+
+a { color: inherit; }
+
+.page {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 48px 24px 96px;
+}
+
+.topbar {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 40px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--paper-line);
+}
+
+.topbar .brand {
+  font-family: 'Noto Serif KR', serif;
+  font-weight: 700;
+  font-size: 1.05rem;
+}
+
+.topbar nav a {
+  text-decoration: none;
+  color: var(--ink-soft);
+  font-size: 0.92rem;
+  margin-left: 20px;
+}
+
+.topbar nav a:hover { color: var(--ink); }
+
+/* ---------- Home tiles ---------- */
+
+.tiles {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
+  margin-top: 32px;
+}
+
+.tile {
+  display: block;
+  text-decoration: none;
+  color: var(--ink);
+  background: var(--card);
+  border: 1px solid var(--paper-line);
+  border-left: 5px solid var(--tile-accent, var(--ink));
+  border-radius: var(--radius);
+  padding: 28px 28px;
+  box-shadow: var(--shadow);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.tile:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(33,37,43,0.08);
+}
+
+.tile.vocab { --tile-accent: var(--vocab); }
+.tile.csat { --tile-accent: var(--csat); }
+
+.tile .kicker {
+  font-size: 0.82rem;
+  color: var(--ink-faint);
+  margin-bottom: 6px;
+}
+
+.tile h2 { font-size: 1.35rem; margin-bottom: 8px; }
+.tile p { margin: 0; color: var(--ink-soft); font-size: 0.95rem; }
+
+/* ---------- Tabs ---------- */
+
+.tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 28px;
+  border-bottom: 1px solid var(--paper-line);
+}
+
+.tab-btn {
+  appearance: none;
+  border: none;
+  background: transparent;
+  padding: 10px 18px;
+  font-size: 0.95rem;
+  font-family: inherit;
+  color: var(--ink-soft);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+}
+
+.tab-btn.active {
+  color: var(--ink);
+  border-bottom-color: var(--page-accent, var(--ink));
+  font-weight: 600;
+}
+
+.panel { display: none; }
+.panel.active { display: block; }
+
+/* ---------- Buttons ---------- */
+
+.btn {
+  appearance: none;
+  border: 1px solid var(--paper-line);
+  background: var(--card);
+  color: var(--ink);
+  padding: 10px 18px;
+  border-radius: var(--radius);
+  font-size: 0.92rem;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.btn:hover { border-color: var(--ink-faint); }
+
+.btn.primary {
+  background: var(--page-accent, var(--ink));
+  border-color: var(--page-accent, var(--ink));
+  color: #fff;
+}
+
+.btn.primary:hover { opacity: 0.92; }
+
+.btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+.btn-row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+
+/* ---------- Data box (CSV upload) ---------- */
+
+.data-box {
+  border: 1px dashed var(--paper-line);
+  border-radius: var(--radius);
+  padding: 18px 20px;
+  margin-bottom: 32px;
+  background: var(--card);
+}
+
+.data-box .status {
+  font-size: 0.88rem;
+  color: var(--ink-soft);
+  margin-top: 8px;
+}
+
+/* ---------- Flashcard (vocab memorize) ---------- */
+
+.flashcard-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+}
+
+.flashcard {
+  width: 100%;
+  max-width: 420px;
+  min-height: 220px;
+  background: var(--card);
+  border: 1px solid var(--paper-line);
+  border-top: 3px solid var(--vocab);
+  border-radius: var(--radius);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 24px;
+  cursor: pointer;
+  position: relative;
+  user-select: none;
+}
+
+.flashcard .face-label {
+  position: absolute;
+  top: 12px;
+  left: 16px;
+  font-size: 0.75rem;
+  color: var(--ink-faint);
+}
+
+.flashcard .word {
+  font-family: 'Noto Serif KR', serif;
+  font-size: 2rem;
+  font-weight: 700;
+  text-align: center;
+}
+
+.flashcard .sub {
+  margin-top: 10px;
+  color: var(--ink-soft);
+  font-size: 1rem;
+  text-align: center;
+}
+
+.flashcard .hint {
+  margin-top: 18px;
+  font-size: 0.8rem;
+  color: var(--ink-faint);
+}
+
+.deck-progress {
+  font-size: 0.88rem;
+  color: var(--ink-soft);
+}
+
+/* ---------- Quiz ---------- */
+
+.quiz-question {
+  background: var(--card);
+  border: 1px solid var(--paper-line);
+  border-top: 3px solid var(--vocab);
+  border-radius: var(--radius);
+  padding: 28px;
+  margin-bottom: 20px;
+}
+
+.quiz-question .prompt {
+  font-family: 'Noto Serif KR', serif;
+  font-size: 1.6rem;
+  margin-bottom: 20px;
+}
+
+.quiz-choices {
+  display: grid;
+  gap: 10px;
+}
+
+.choice-btn {
+  text-align: left;
+  padding: 12px 16px;
+  border: 1px solid var(--paper-line);
+  border-radius: var(--radius);
+  background: var(--card);
+  font-family: inherit;
+  font-size: 0.98rem;
+  cursor: pointer;
+}
+
+.choice-btn:hover { border-color: var(--vocab); }
+.choice-btn.correct { background: #e5f0e6; border-color: #4a7c52; }
+.choice-btn.wrong { background: var(--csat-soft); border-color: var(--csat); }
+
+.quiz-result {
+  text-align: center;
+  padding: 40px 20px;
+}
+
+.quiz-result .score {
+  font-family: 'Noto Serif KR', serif;
+  font-size: 2.4rem;
+  font-weight: 700;
+  color: var(--vocab);
+}
+
+/* ---------- CSAT trainer ---------- */
+
+.timer-select {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 28px;
+}
+
+.timer-opt {
+  padding: 10px 20px;
+  border: 1px solid var(--paper-line);
+  border-radius: var(--radius);
+  background: var(--card);
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.timer-opt.active {
+  border-color: var(--csat);
+  background: var(--csat-soft);
+  font-weight: 600;
+}
+
+.omr-grid {
+  background: var(--card);
+  border: 1px solid var(--paper-line);
+  border-radius: var(--radius);
+  padding: 24px;
+}
+
+.omr-row {
+  display: grid;
+  grid-template-columns: 32px repeat(5, 1fr);
+  align-items: center;
+  gap: 8px;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--paper-line);
+}
+
+.omr-row:last-child { border-bottom: none; }
+
+.omr-num {
+  font-size: 0.85rem;
+  color: var(--ink-faint);
+  text-align: right;
+  padding-right: 6px;
+}
+
+.omr-bubble {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 1.5px solid var(--ink-faint);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem;
+  color: var(--ink-soft);
+  margin: 0 auto;
+  background: var(--paper);
+  cursor: default;
+}
+
+.omr-bubble.filled {
+  background: var(--csat);
+  border-color: var(--csat);
+  color: #fff;
+}
+
+.omr-bubble.clickable { cursor: pointer; }
+.omr-bubble.clickable:hover { border-color: var(--csat); }
+
+.omr-bubble.answer-correct {
+  background: #4a7c52;
+  border-color: #4a7c52;
+  color: #fff;
+}
+
+.omr-bubble.answer-wrong {
+  background: var(--csat);
+  border-color: var(--csat);
+  color: #fff;
+}
+
+.timer-display {
+  text-align: center;
+  font-family: 'Noto Serif KR', serif;
+  font-size: 3rem;
+  font-weight: 700;
+  color: var(--csat);
+  margin-bottom: 20px;
+}
+
+.csat-result {
+  text-align: center;
+  padding: 30px 20px;
+}
+
+.csat-result .score {
+  font-family: 'Noto Serif KR', serif;
+  font-size: 2.4rem;
+  font-weight: 700;
+  color: var(--csat);
+}
+
+.center { text-align: center; }
+.mt-24 { margin-top: 24px; }
+.hidden { display: none !important; }
+
+@media (max-width: 480px) {
+  .flashcard .word { font-size: 1.5rem; }
+  .omr-bubble { width: 28px; height: 28px; font-size: 0.75rem; }
+}

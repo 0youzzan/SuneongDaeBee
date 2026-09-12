@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>수능 답안지 암기 훈련</title>
+<link rel="stylesheet" href="css/style.css">
+<style>:root{--page-accent:var(--csat);}</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="topbar">
+    <div class="brand">답안지 암기 훈련</div>
+    <nav>
+      <a href="index.html">홈</a>
+      <a href="vocab.html">어휘 학습</a>
+    </nav>
+  </div>
+
+  <p style="color:var(--ink-soft)">1~5 사이의 숫자 20개를 정해진 시간 동안 외운 뒤, 답안지에 그대로 옮겨 적어보세요.</p>
+
+  <!-- 1단계: 설정 -->
+  <div id="stage-setup">
+    <h3 style="font-size:1rem; color:var(--ink-soft); font-family:inherit; font-weight:600;">암기 시간 선택</h3>
+    <div class="timer-select">
+      <button class="timer-opt" data-sec="10">10초</button>
+      <button class="timer-opt active" data-sec="15">15초</button>
+      <button class="timer-opt" data-sec="30">30초</button>
+      <button class="timer-opt" data-sec="60">1분</button>
+    </div>
+    <button class="btn primary" id="start-btn">문제 만들고 시작</button>
+  </div>
+
+  <!-- 2단계: 암기 -->
+  <div id="stage-memorize" class="hidden">
+    <div class="timer-display" id="timer-display">15</div>
+    <div class="omr-grid" id="memorize-grid"></div>
+  </div>
+
+  <!-- 3단계: 답 입력 -->
+  <div id="stage-recall" class="hidden">
+    <p style="color:var(--ink-soft)">방금 본 답을 그대로 체크해보세요.</p>
+    <div class="omr-grid" id="recall-grid"></div>
+    <div class="btn-row mt-24">
+      <button class="btn primary" id="submit-btn">채점하기</button>
+    </div>
+  </div>
+
+  <!-- 4단계: 결과 -->
+  <div id="stage-result" class="hidden">
+    <div class="csat-result">
+      <div class="score" id="result-score">0 / 20</div>
+      <p style="color:var(--ink-soft)">틀린 문제는 빨간색으로 표시돼요.</p>
+    </div>
+    <div class="omr-grid" id="result-grid"></div>
+    <div class="btn-row mt-24 center" style="justify-content:center;">
+      <button class="btn primary" id="retry-btn">다시 도전하기</button>
+    </div>
+  </div>
+
+</div>
+
+<script src="js/csat.js"></script>
+</body>
+</html>
