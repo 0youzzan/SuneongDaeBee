@@ -98,18 +98,5 @@ function csvToVocabList(text) {
   return list;
 }
 
-const VOCAB_STORAGE_KEY = 'jp-vocab-list-v1';
-
-function saveVocabList(list) {
-  localStorage.setItem(VOCAB_STORAGE_KEY, JSON.stringify(list));
-}
-
-function loadVocabList() {
-  const raw = localStorage.getItem(VOCAB_STORAGE_KEY);
-  if (!raw) return [];
-  try {
-    return JSON.parse(raw);
-  } catch (e) {
-    return [];
-  }
-}
+// (참고) 이 앱은 이제 항상 data/vocab.csv를 그대로 불러와 쓰기 때문에
+// localStorage에 따로 저장하지 않습니다.

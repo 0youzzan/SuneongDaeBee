@@ -1,4 +1,4 @@
-let vocabList = loadVocabList();
+let vocabList = [];
 let deck = [];       // 외우기용 순서
 let deckIndex = 0;
 let showingFront = true;
@@ -7,37 +7,31 @@ let quizQueue = [];
 let quizIndex = 0;
 let quizScore = 0;
 
-const AUTO_LOAD_PATH = 'data/vocab.csv';
-
-// data/vocab.csv 파일이 있으면 자동으로 불러온다.
-// (localStorage에 이미 단어가 저장돼 있으면 건드리지 않는다 - 사용자가 업로드한 걸 우선함)
-async function tryAutoLoadCSV() {
-  if (vocabList.length > 0) return;
-  if (localStorage.getItem('jp-vocab-user-cleared') === '1') return;
-  try {
-    const res = await fetch(AUTO_LOAD_PATH, { cache: 'no-store' });
-    if (!res.ok) return;
-    const text = await res.text();
-    const parsed = csvToVocabList(text);
-    if (parsed.length > 0) {
-      vocabList = parsed;
-      saveVocabList(vocabList);
-      refreshDataStatus();
-    }
-  } catch (e) {
-    // 파일이 없거나 로컬에서 file:// 로 열어서 fetch가 막힌 경우 - 조용히 무시
-  }
-}
+const VOCAB_CSV_PATH = 'data/vocab.csv';
 
 // ---------- 초기화 ----------
 
+async function loadVocabData() {
+  const statusEl = document.getElementById('data-status');
+  statusEl.textContent = '단어를 불러오는 중이에요…';
+
+  try {
+    const res = await fetch(VOCAB_CSV_PATH, { cache: 'no-store' });
+    if (!res.ok) throw new Error('파일을 찾을 수 없어요');
+    const text = await res.text();
+    vocabList = csvToVocabList(text);
+  } catch (e) {
+    vocabList = [];
+    statusEl.textContent = `data/vocab.csv 파일을 불러오지 못했어요. (${e.message})`;
+    return;
+  }
+
+  refreshDataStatus();
+}
+
 function refreshDataStatus() {
   const statusEl = document.getElementById('data-status');
-  if (vocabList.length === 0) {
-    statusEl.textContent = '아직 불러온 단어가 없어요. CSV 파일(일본어, 뜻, 읽는법 순서)을 올려주세요.';
-  } else {
-    statusEl.textContent = `단어 ${vocabList.length}개가 저장되어 있어요.`;
-  }
+  statusEl.textContent = `data/vocab.csv에서 단어 ${vocabList.length}개를 불러왔어요.`;
   document.getElementById('quiz-word-count').textContent = vocabList.length;
 
   const hasData = vocabList.length > 0;
@@ -48,32 +42,6 @@ function refreshDataStatus() {
 
   if (hasData) resetDeck();
 }
-
-document.getElementById('csv-input').addEventListener('change', (e) => {
-  const file = e.target.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = (ev) => {
-    const parsed = csvToVocabList(ev.target.result);
-    if (parsed.length === 0) {
-      alert('CSV에서 단어를 찾지 못했어요. 형식을 확인해주세요 (일본어,뜻,읽는법).');
-      return;
-    }
-    vocabList = parsed;
-    saveVocabList(vocabList);
-    refreshDataStatus();
-  };
-  reader.readAsText(file, 'UTF-8');
-  e.target.value = '';
-});
-
-document.getElementById('clear-data-btn').addEventListener('click', () => {
-  if (!confirm('저장된 단어를 모두 지울까요?')) return;
-  vocabList = [];
-  saveVocabList(vocabList);
-  localStorage.setItem('jp-vocab-user-cleared', '1');
-  refreshDataStatus();
-});
 
 // ---------- 탭 전환 ----------
 
@@ -217,5 +185,4 @@ function renderQuizQuestion() {
 
 // ---------- 시작 ----------
 
-refreshDataStatus();
-tryAutoLoadCSV();
+loadVocabData();
