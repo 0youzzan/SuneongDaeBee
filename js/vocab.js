@@ -7,7 +7,7 @@ let quizQueue = [];
 let quizIndex = 0;
 let quizScore = 0;
 
-const VOCAB_CSV_PATH = 'data/vocab.csv';
+const VOCAB_CSV_PATH = 'vocab.csv';
 
 // ---------- 초기화 ----------
 
