@@ -225,25 +225,33 @@ document.getElementById('classify-back-btn').addEventListener('click', () => {
 const dailyWidget = createFlashcardWidget();
 document.getElementById('daily-flashcard-slot').appendChild(dailyWidget.el);
 
-const DAILY_UNIT_SIZE = 50;
-
 function initDailyPicker() {
-  const units = [];
-  for (let i = 0; i < vocabList.length; i += DAILY_UNIT_SIZE) {
-    units.push(vocabList.slice(i, i + DAILY_UNIT_SIZE));
-  }
+  const groups = {};
+  vocabList.forEach(item => {
+    const key = (item.unit !== null && item.unit !== undefined) ? item.unit : '미분류';
+    if (!groups[key]) groups[key] = [];
+    groups[key].push(item);
+  });
+
+  // 단원 번호 순으로 정렬, 단원이 없는 단어는 맨 뒤 '미분류'로
+  const keys = Object.keys(groups).sort((a, b) => {
+    if (a === '미분류') return 1;
+    if (b === '미분류') return -1;
+    return Number(a) - Number(b);
+  });
 
   const container = document.getElementById('daily-buttons');
-  container.innerHTML = units.map((u, i) => `
-    <button class="picker-btn" data-unit="${i}">${i + 1}단원<span class="count">${u.length}개</span></button>
-  `).join('');
+  container.innerHTML = keys.map(k => {
+    const label = k === '미분류' ? '미분류' : `${k}단원`;
+    return `<button class="picker-btn" data-key="${encodeURIComponent(k)}">${label}<span class="count">${groups[k].length}개</span></button>`;
+  }).join('');
 
   container.querySelectorAll('.picker-btn').forEach(btn => {
     btn.addEventListener('click', () => {
-      const idx = parseInt(btn.dataset.unit, 10);
+      const key = decodeURIComponent(btn.dataset.key);
       document.getElementById('daily-picker').classList.add('hidden');
       document.getElementById('daily-study').classList.remove('hidden');
-      dailyWidget.load(units[idx]);
+      dailyWidget.load(groups[key]);
     });
   });
 }

@@ -59,40 +59,50 @@ function parseCSV(text) {
 
 // CSV 텍스트를 어휘 배열로 변환한다.
 // 지원하는 열 구성:
-//   4열: 히라가나/가타카나, 한자, 품사, 한국어해석  (예: japanese_vocabulary.csv)
+//   5열: 단원, 히라가나/가타카나, 한자, 품사, 한국어해석  (단원 번호가 있는 최신 형식)
+//   4열: 히라가나/가타카나, 한자, 품사, 한국어해석
 //   3열: 일본어, 뜻, 읽는법
 //   2열: 일본어, 뜻
-// 첫 줄의 첫 칸에 히라가나/가타카나/한자가 없으면 헤더로 보고 건너뛴다.
+// 첫 줄이 헤더로 보이면(단어 칸에 히라가나/가타카나/한자가 없으면) 건너뛴다.
 function csvToVocabList(text) {
   text = text.replace(/^\uFEFF/, ''); // 엑셀에서 저장한 CSV의 BOM 제거
   const rows = parseCSV(text);
   if (rows.length === 0) return [];
 
   const jpPattern = /[\u3040-\u30FF\u4E00-\u9FFF]/; // 히라가나/가타카나/한자
+  const firstRow = rows[0].map(c => c.trim());
+  const wordColIdx = firstRow.length >= 5 ? 1 : 0; // 5열이면 두 번째 칸이 단어
   let startIdx = 0;
-  const firstCell = (rows[0][0] || '').trim();
-  if (!jpPattern.test(firstCell)) {
+  if (!jpPattern.test(firstRow[wordColIdx] || '')) {
     startIdx = 1; // 첫 줄이 헤더로 보임
   }
 
   const list = [];
   for (let i = startIdx; i < rows.length; i++) {
     const cols = rows[i].map(c => c.trim());
-    if (cols.length === 0 || !cols[0]) continue;
+    if (cols.length === 0 || cols.every(c => !c)) continue;
 
-    if (cols.length >= 4) {
-      // 히라가나/가타카나, 한자, 품사, 한국어해석
+    if (cols.length >= 5) {
+      // 단원, 히라가나/가타카나, 한자, 품사, 한국어해석
+      const [unitRaw, word, kanji, pos, meaning] = cols;
+      if (!word || !meaning) continue;
+      const unitNum = parseInt(unitRaw, 10);
+      list.push({
+        unit: Number.isNaN(unitNum) ? null : unitNum,
+        word, kanji: kanji || '', pos: pos || '', meaning
+      });
+    } else if (cols.length === 4) {
       const [word, kanji, pos, meaning] = cols;
       if (!word || !meaning) continue;
-      list.push({ word, kanji: kanji || '', pos: pos || '', meaning });
+      list.push({ unit: null, word, kanji: kanji || '', pos: pos || '', meaning });
     } else if (cols.length === 3) {
       const [word, meaning, reading] = cols;
       if (!word || !meaning) continue;
-      list.push({ word, kanji: reading || '', pos: '', meaning });
+      list.push({ unit: null, word, kanji: reading || '', pos: '', meaning });
     } else if (cols.length === 2) {
       const [word, meaning] = cols;
       if (!word || !meaning) continue;
-      list.push({ word, kanji: '', pos: '', meaning });
+      list.push({ unit: null, word, kanji: '', pos: '', meaning });
     }
   }
   return list;
