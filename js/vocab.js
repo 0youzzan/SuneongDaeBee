@@ -222,28 +222,45 @@ document.getElementById('classify-back-btn').addEventListener('click', () => {
 
 // ---------- 4. 일일학습 ----------
 
-const dailyWidget = createFlashcardWidget();
-document.getElementById('daily-flashcard-slot').appendChild(dailyWidget.el);
-
-const DAILY_UNIT_SIZE = 50;
-
 function initDailyPicker() {
-  const units = [];
-  for (let i = 0; i < vocabList.length; i += DAILY_UNIT_SIZE) {
-    units.push(vocabList.slice(i, i + DAILY_UNIT_SIZE));
-  }
+  // 단원 번호별로 단어를 그룹화
+  const units = {};
+
+  vocabList.forEach(item => {
+    const unit = String(item.unit || '').trim();
+
+    // 단원 값이 없는 단어는 일일학습에서 제외
+    if (!unit) return;
+
+    if (!units[unit]) {
+      units[unit] = [];
+    }
+
+    units[unit].push(item);
+  });
+
+  // 단원 번호를 숫자 순서대로 정렬
+  const unitNumbers = Object.keys(units).sort((a, b) => {
+    return Number(a) - Number(b);
+  });
 
   const container = document.getElementById('daily-buttons');
-  container.innerHTML = units.map((u, i) => `
-    <button class="picker-btn" data-unit="${i}">${i + 1}단원<span class="count">${u.length}개</span></button>
+
+  container.innerHTML = unitNumbers.map(unit => `
+    <button class="picker-btn" data-unit="${unit}">
+      ${unit}단원
+      <span class="count">${units[unit].length}개</span>
+    </button>
   `).join('');
 
   container.querySelectorAll('.picker-btn').forEach(btn => {
     btn.addEventListener('click', () => {
-      const idx = parseInt(btn.dataset.unit, 10);
+      const unit = btn.dataset.unit;
+
       document.getElementById('daily-picker').classList.add('hidden');
       document.getElementById('daily-study').classList.remove('hidden');
-      dailyWidget.load(units[idx]);
+
+      dailyWidget.load(units[unit]);
     });
   });
 }
@@ -252,24 +269,3 @@ document.getElementById('daily-back-btn').addEventListener('click', () => {
   document.getElementById('daily-study').classList.add('hidden');
   document.getElementById('daily-picker').classList.remove('hidden');
 });
-
-// ---------- 시작 ----------
-
-updateModeNote();
-
-loadVocabData('data-status')
-  .then(() => {
-    const hasData = vocabList.length > 0;
-    document.getElementById('empty-notice').classList.toggle('hidden', hasData);
-    if (!hasData) {
-      document.getElementById('empty-notice').textContent = '단어를 불러오지 못했어요.';
-      return;
-    }
-    allWidget.load(vocabList);
-    renderWordListPage();
-    initClassifyPicker();
-    initDailyPicker();
-  })
-  .catch(() => {
-    document.getElementById('empty-notice').textContent = '단어를 불러오지 못했어요.';
-  });

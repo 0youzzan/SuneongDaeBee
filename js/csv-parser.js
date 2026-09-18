@@ -56,47 +56,100 @@ function parseCSV(text) {
 
   return rows.filter(r => r.some(cell => cell.trim() !== ''));
 }
-
 // CSV 텍스트를 어휘 배열로 변환한다.
 // 지원하는 열 구성:
-//   4열: 히라가나/가타카나, 한자, 품사, 한국어해석  (예: japanese_vocabulary.csv)
+//   5열: 단원, 히라가나/가타카나, 한자, 품사, 한국어해석
+//   4열: 히라가나/가타카나, 한자, 품사, 한국어해석
 //   3열: 일본어, 뜻, 읽는법
 //   2열: 일본어, 뜻
-// 첫 줄의 첫 칸에 히라가나/가타카나/한자가 없으면 헤더로 보고 건너뛴다.
+
 function csvToVocabList(text) {
-  text = text.replace(/^\uFEFF/, ''); // 엑셀에서 저장한 CSV의 BOM 제거
+  text = text.replace(/^\uFEFF/, ''); // 엑셀 CSV의 BOM 제거
+
   const rows = parseCSV(text);
   if (rows.length === 0) return [];
 
-  const jpPattern = /[\u3040-\u30FF\u4E00-\u9FFF]/; // 히라가나/가타카나/한자
+  // 첫 줄이 헤더인지 확인
   let startIdx = 0;
-  const firstCell = (rows[0][0] || '').trim();
-  if (!jpPattern.test(firstCell)) {
-    startIdx = 1; // 첫 줄이 헤더로 보임
+  const firstRow = rows[0].map(c => c.trim());
+
+  const isHeader =
+    firstRow.includes('단원') ||
+    firstRow.includes('히라가나/가타카나') ||
+    firstRow.includes('한자') ||
+    firstRow.includes('품사') ||
+    firstRow.includes('한국어해석');
+
+  if (isHeader) {
+    startIdx = 1;
   }
 
   const list = [];
+
   for (let i = startIdx; i < rows.length; i++) {
     const cols = rows[i].map(c => c.trim());
-    if (cols.length === 0 || !cols[0]) continue;
 
-    if (cols.length >= 4) {
-      // 히라가나/가타카나, 한자, 품사, 한국어해석
-      const [word, kanji, pos, meaning] = cols;
+    if (cols.length === 0) continue;
+
+    // 5열: 단원, 히라가나/가타카나, 한자, 품사, 한국어해석
+    if (cols.length >= 5) {
+      const [unit, word, kanji, pos, meaning] = cols;
+
       if (!word || !meaning) continue;
-      list.push({ word, kanji: kanji || '', pos: pos || '', meaning });
+
+      list.push({
+        unit: unit || '',
+        word,
+        kanji: kanji || '',
+        pos: pos || '',
+        meaning
+      });
+
+    // 4열: 히라가나/가타카나, 한자, 품사, 한국어해석
+    } else if (cols.length === 4) {
+      const [word, kanji, pos, meaning] = cols;
+
+      if (!word || !meaning) continue;
+
+      list.push({
+        unit: '',
+        word,
+        kanji: kanji || '',
+        pos: pos || '',
+        meaning
+      });
+
+    // 3열: 일본어, 뜻, 읽는법
     } else if (cols.length === 3) {
       const [word, meaning, reading] = cols;
+
       if (!word || !meaning) continue;
-      list.push({ word, kanji: reading || '', pos: '', meaning });
+
+      list.push({
+        unit: '',
+        word,
+        kanji: reading || '',
+        pos: '',
+        meaning
+      });
+
+    // 2열: 일본어, 뜻
     } else if (cols.length === 2) {
       const [word, meaning] = cols;
+
       if (!word || !meaning) continue;
-      list.push({ word, kanji: '', pos: '', meaning });
+
+      list.push({
+        unit: '',
+        word,
+        kanji: '',
+        pos: '',
+        meaning
+      });
     }
   }
+
   return list;
 }
-
 // (참고) 이 앱은 이제 항상 data/vocab.csv를 그대로 불러와 쓰기 때문에
 // localStorage에 따로 저장하지 않습니다.
