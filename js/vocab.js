@@ -154,6 +154,8 @@ function totalListPages() {
 }
 
 function renderWordListPage() {
+  document.getElementById('list-content').classList.remove('hidden');
+
   const start = listPage * LIST_PAGE_SIZE;
   const pageItems = vocabList.slice(start, start + LIST_PAGE_SIZE);
 
