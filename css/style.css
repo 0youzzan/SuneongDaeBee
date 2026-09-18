@@ -401,7 +401,77 @@ a { color: inherit; }
 .mt-24 { margin-top: 24px; }
 .hidden { display: none !important; }
 
+/* ---------- Word list (단어보기) ---------- */
+
+.word-list {
+  border: 1px solid var(--paper-line);
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: var(--card);
+}
+
+.word-row {
+  display: grid;
+  grid-template-columns: 44px 1.3fr 1.4fr 90px;
+  gap: 10px;
+  align-items: baseline;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--paper-line);
+  font-size: 0.92rem;
+}
+
+.word-row:last-child { border-bottom: none; }
+
+.word-row.header {
+  background: var(--vocab-soft);
+  font-weight: 600;
+  font-size: 0.82rem;
+  color: var(--ink-soft);
+}
+
+.word-row .num { color: var(--ink-faint); font-size: 0.85rem; }
+.word-row .jp { font-weight: 600; }
+.word-row .jp .kanji-hint { color: var(--ink-faint); font-weight: 400; margin-left: 4px; }
+.word-row .pos { color: var(--ink-soft); font-size: 0.85rem; }
+
+.list-pager {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 20px;
+}
+
+/* ---------- Picker grid (분류학습 / 일일학습) ---------- */
+
+.picker-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.picker-btn {
+  padding: 12px 18px;
+  border: 1px solid var(--paper-line);
+  border-radius: var(--radius);
+  background: var(--card);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.92rem;
+  text-align: left;
+}
+
+.picker-btn:hover { border-color: var(--vocab); }
+
+.picker-btn .count {
+  display: block;
+  font-size: 0.78rem;
+  color: var(--ink-faint);
+  margin-top: 2px;
+}
+
 @media (max-width: 480px) {
   .flashcard .word { font-size: 1.5rem; }
   .omr-bubble { width: 28px; height: 28px; font-size: 0.75rem; }
+  .word-row { grid-template-columns: 30px 1fr 1fr 60px; font-size: 0.82rem; }
 }

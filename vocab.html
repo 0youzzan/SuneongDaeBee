@@ -23,6 +23,7 @@
     <div class="status" id="data-status">단어를 불러오는 중이에요…</div>
   </div>
 
+  <!-- 표시 방식: 모든 학습 방법에 공통으로 적용 -->
   <div class="timer-select" id="mode-toggle">
     <button class="timer-opt active" data-mode="all">모두 학습</button>
     <button class="timer-opt" data-mode="kana">히라가나만 학습</button>
@@ -30,23 +31,55 @@
   </div>
   <div class="status" id="mode-note" style="margin-bottom:20px;"></div>
 
-  <div id="memorize-empty" class="center" style="color:var(--ink-soft); padding:40px 0;">
-    단어를 불러오면 카드로 외울 수 있어요.
+  <!-- 학습 방법 탭 -->
+  <div class="tabs">
+    <button class="tab-btn active" data-panel="all-study">전체 학습</button>
+    <button class="tab-btn" data-panel="list">단어보기</button>
+    <button class="tab-btn" data-panel="classify">분류학습</button>
+    <button class="tab-btn" data-panel="daily">일일학습</button>
   </div>
-  <div id="memorize-content" class="hidden">
-    <div class="flashcard-wrap">
-      <div class="deck-progress" id="deck-progress">1 / 10</div>
-      <div class="flashcard" id="flashcard">
-        <div class="face-label" id="face-label">일본어</div>
-        <div class="word" id="card-word">言葉</div>
-        <div class="sub" id="card-sub"></div>
-        <div class="hint">카드를 클릭하면 뒤집혀요</div>
+
+  <!-- 1. 전체 학습 -->
+  <div class="panel active" id="panel-all-study">
+    <div id="empty-notice" class="center" style="color:var(--ink-soft); padding:40px 0;">
+      단어를 불러오는 중이에요.
+    </div>
+    <div id="all-flashcard-slot"></div>
+  </div>
+
+  <!-- 2. 단어보기 -->
+  <div class="panel" id="panel-list">
+    <div id="list-content" class="hidden">
+      <div class="word-list" id="word-list"></div>
+      <div class="list-pager">
+        <button class="btn" id="list-prev-btn">← 이전 50개</button>
+        <span id="list-page-indicator" style="color:var(--ink-soft); font-size:0.9rem;">1 / 19</span>
+        <button class="btn" id="list-next-btn">다음 50개 →</button>
       </div>
-      <div class="btn-row">
-        <button class="btn" id="prev-btn">이전</button>
-        <button class="btn" id="shuffle-btn">섞기</button>
-        <button class="btn" id="next-btn">다음</button>
-      </div>
+    </div>
+  </div>
+
+  <!-- 3. 분류학습 -->
+  <div class="panel" id="panel-classify">
+    <div id="classify-picker">
+      <p style="color:var(--ink-soft)">품사를 선택하면 그 단어들만 카드로 학습해요.</p>
+      <div class="picker-grid" id="classify-buttons"></div>
+    </div>
+    <div id="classify-study" class="hidden">
+      <button class="btn" id="classify-back-btn" style="margin-bottom:20px;">← 다른 분류 선택</button>
+      <div id="classify-flashcard-slot"></div>
+    </div>
+  </div>
+
+  <!-- 4. 일일학습 -->
+  <div class="panel" id="panel-daily">
+    <div id="daily-picker">
+      <p style="color:var(--ink-soft)">단원을 선택하면 그 50개 단어만 카드로 학습해요.</p>
+      <div class="picker-grid" id="daily-buttons"></div>
+    </div>
+    <div id="daily-study" class="hidden">
+      <button class="btn" id="daily-back-btn" style="margin-bottom:20px;">← 다른 단원 선택</button>
+      <div id="daily-flashcard-slot"></div>
     </div>
   </div>
 
