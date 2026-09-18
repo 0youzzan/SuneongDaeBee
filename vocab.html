@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>일본어 어휘 학습장</title>
+<title>어휘 학습</title>
 <link rel="stylesheet" href="css/style.css">
 <style>:root{--page-accent:var(--vocab);}</style>
 </head>
@@ -11,60 +11,42 @@
 <div class="page">
 
   <div class="topbar">
-    <div class="brand">일본어 어휘 학습장</div>
+    <div class="brand">어휘 학습</div>
     <nav>
       <a href="index.html">홈</a>
+      <a href="quiz.html">어휘 테스트</a>
       <a href="csat.html">답안지 암기</a>
     </nav>
   </div>
 
   <div class="data-box">
-    <div class="status" id="data-status">단어를 불러오는 중이에요…1</div>
+    <div class="status" id="data-status">단어를 불러오는 중이에요…</div>
   </div>
 
-  <div class="tabs">
-    <button class="tab-btn active" data-panel="memorize">외우기</button>
-    <button class="tab-btn" data-panel="quiz">시험보기</button>
+  <div id="memorize-empty" class="center" style="color:var(--ink-soft); padding:40px 0;">
+    단어를 불러오면 카드로 외울 수 있어요.
   </div>
-
-  <!-- 외우기 모드 -->
-  <div class="panel active" id="panel-memorize">
-    <div id="memorize-empty" class="center" style="color:var(--ink-soft); padding:40px 0;">
-      단어를 불러오면 카드로 외울 수 있어요.
-    </div>
-    <div id="memorize-content" class="hidden">
-      <div class="flashcard-wrap">
-        <div class="deck-progress" id="deck-progress">1 / 10</div>
-        <div class="flashcard" id="flashcard">
-          <div class="face-label" id="face-label">일본어</div>
-          <div class="word" id="card-word">言葉</div>
-          <div class="sub" id="card-sub"></div>
-          <div class="hint">카드를 클릭하면 뒤집혀요</div>
-        </div>
-        <div class="btn-row">
-          <button class="btn" id="prev-btn">이전</button>
-          <button class="btn" id="shuffle-btn">섞기</button>
-          <button class="btn" id="next-btn">다음</button>
-        </div>
+  <div id="memorize-content" class="hidden">
+    <div class="flashcard-wrap">
+      <div class="deck-progress" id="deck-progress">1 / 10</div>
+      <div class="flashcard" id="flashcard">
+        <div class="face-label" id="face-label">일본어</div>
+        <div class="word" id="card-word">言葉</div>
+        <div class="sub" id="card-sub"></div>
+        <div class="hint">카드를 클릭하면 뒤집혀요</div>
+      </div>
+      <div class="btn-row">
+        <button class="btn" id="prev-btn">이전</button>
+        <button class="btn" id="shuffle-btn">섞기</button>
+        <button class="btn" id="next-btn">다음</button>
       </div>
     </div>
-  </div>
-
-  <!-- 시험보기 모드 -->
-  <div class="panel" id="panel-quiz">
-    <div id="quiz-empty" class="center" style="color:var(--ink-soft); padding:40px 0;">
-      단어를 불러오면 시험을 볼 수 있어요.
-    </div>
-    <div id="quiz-setup" class="hidden">
-      <p style="color:var(--ink-soft)">불러온 단어 <strong id="quiz-word-count">0</strong>개 중에서 문제를 냅니다.</p>
-      <button class="btn primary" id="start-quiz-btn">시험 시작</button>
-    </div>
-    <div id="quiz-content" class="hidden"></div>
   </div>
 
 </div>
 
 <script src="js/csv-parser.js"></script>
+<script src="js/vocab-data.js"></script>
 <script src="js/vocab.js"></script>
 </body>
 </html>
