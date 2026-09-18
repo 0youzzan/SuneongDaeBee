@@ -1,25 +1,25 @@
 let deck = [];       // 외우기용 순서 (vocabList 인덱스)
 let deckIndex = 0;
 let showingFront = true;
-let studyMode = 'kana'; // 'kana' | 'kanji'
+let studyMode = 'all'; // 'all' | 'kana' | 'kanji'
 
 function showContent(hasData) {
   document.getElementById('memorize-empty').classList.toggle('hidden', hasData);
   document.getElementById('memorize-content').classList.toggle('hidden', !hasData);
 }
 
-// 현재 모드에 맞는 단어 목록(인덱스)을 만든다.
-// 한자 모드여도 단어를 제외하지 않는다 - 한자가 없으면 카드에 '(한자X)'로 표시한다.
 function buildDeckIndices() {
   return vocabList.map((_, i) => i);
 }
 
 function updateModeNote() {
   const noteEl = document.getElementById('mode-note');
-  if (studyMode === 'kanji') {
-    noteEl.textContent = '한자가 없는 단어는 히라가나로 보이고 옆에 (한자X)로 표시돼요.';
+  if (studyMode === 'kana') {
+    noteEl.textContent = '한자 없이 히라가나만 보여줘요.';
+  } else if (studyMode === 'kanji') {
+    noteEl.textContent = '한자만 보여줘요. 한자가 없는 단어는 히라가나 옆에 (한자X)로 표시돼요.';
   } else {
-    noteEl.textContent = '';
+    noteEl.textContent = '히라가나와 한자를 같이 보여줘요.';
   }
 }
 
@@ -41,6 +41,28 @@ function shuffleDeck() {
   renderCard();
 }
 
+// 카드 앞면(문제) 내용을 모드에 맞게 만든다.
+function getFrontContent(item) {
+  if (studyMode === 'kana') {
+    return { label: item.pos || '일본어', main: item.word, sub: '' };
+  }
+  if (studyMode === 'kanji') {
+    if (item.kanji) {
+      return { label: item.pos || '한자', main: item.kanji, sub: '' };
+    }
+    return { label: item.pos || '한자', main: item.word, sub: '(한자X)' };
+  }
+  // all
+  const main = item.kanji ? `${item.word} (${item.kanji})` : item.word;
+  return { label: item.pos || '일본어', main, sub: '' };
+}
+
+// 카드 뒷면(정답) 내용 - 모드와 상관없이 항상 뜻 + 읽기를 보여준다.
+function getBackContent(item) {
+  const reading = item.kanji ? `${item.word} · ${item.kanji}` : item.word;
+  return { label: '뜻', main: item.meaning, sub: reading };
+}
+
 function renderCard() {
   if (deck.length === 0) return;
   const item = vocabList[deck[deckIndex]];
@@ -48,32 +70,11 @@ function renderCard() {
   const subEl = document.getElementById('card-sub');
   const labelEl = document.getElementById('face-label');
 
-  if (studyMode === 'kanji') {
-    if (showingFront) {
-      labelEl.textContent = item.pos || '한자';
-      if (item.kanji) {
-        wordEl.textContent = item.kanji;
-        subEl.textContent = '';
-      } else {
-        wordEl.textContent = item.word;
-        subEl.textContent = '(한자X)';
-      }
-    } else {
-      labelEl.textContent = '읽기 · 뜻';
-      wordEl.textContent = item.word;
-      subEl.textContent = item.meaning;
-    }
-  } else {
-    if (showingFront) {
-      labelEl.textContent = item.pos || '일본어';
-      wordEl.textContent = item.word;
-      subEl.textContent = item.kanji ? `한자: ${item.kanji}` : '';
-    } else {
-      labelEl.textContent = '뜻';
-      wordEl.textContent = item.meaning;
-      subEl.textContent = item.kanji ? `${item.word} · ${item.kanji}` : item.word;
-    }
-  }
+  const c = showingFront ? getFrontContent(item) : getBackContent(item);
+  labelEl.textContent = c.label;
+  wordEl.textContent = c.main;
+  subEl.textContent = c.sub;
+
   document.getElementById('deck-progress').textContent = `${deckIndex + 1} / ${deck.length}`;
 }
 

@@ -1,27 +1,26 @@
 let quizQueue = [];
 let quizIndex = 0;
 let quizScore = 0;
-let studyMode = 'kana'; // 'kana' | 'kanji'
+let studyMode = 'all'; // 'all' | 'kana' | 'kanji'
 
-// 현재 모드에서 출제 대상이 되는 단어 목록.
-// 한자 모드여도 단어를 제외하지 않는다 - 한자가 없으면 (한자X)로 표시한다.
 function getQuizPool() {
   return vocabList;
 }
 
 function updateModeNote() {
   const noteEl = document.getElementById('mode-note');
-  if (studyMode === 'kanji') {
-    noteEl.textContent = '한자가 없는 단어는 히라가나로 나오고 옆에 (한자X)로 표시돼요.';
+  if (studyMode === 'kana') {
+    noteEl.textContent = '한자 없이 히라가나만 문제로 나와요.';
+  } else if (studyMode === 'kanji') {
+    noteEl.textContent = '한자만 문제로 나와요. 한자가 없는 단어는 히라가나 옆에 (한자X)로 표시돼요.';
   } else {
-    noteEl.textContent = '';
+    noteEl.textContent = '히라가나와 한자를 같이 문제로 보여줘요.';
   }
 }
 
 function showContent(hasData) {
   updateModeNote();
-  const pool = getQuizPool();
-  document.getElementById('quiz-word-count').textContent = pool.length;
+  document.getElementById('quiz-word-count').textContent = getQuizPool().length;
   document.getElementById('quiz-empty').classList.toggle('hidden', hasData);
   document.getElementById('quiz-setup').classList.toggle('hidden', !hasData);
 }
@@ -55,14 +54,17 @@ function buildChoices(correctItem) {
   return choices.sort(() => Math.random() - 0.5);
 }
 
+// 문제로 보여줄 텍스트를 모드에 맞게 만든다. (힌트 없이 그 모드에 맞는 것만 보여준다)
 function getPromptText(item) {
+  if (studyMode === 'kana') return item.word;
   if (studyMode === 'kanji') return item.kanji || item.word;
-  return item.word;
+  return item.kanji ? `${item.word} (${item.kanji})` : item.word; // all
 }
 
-function getPromptHint(item) {
-  if (studyMode === 'kanji') return item.kanji ? item.word : '한자X';
-  return item.kanji;
+// 한자 모드인데 한자가 없을 때만 (한자X) 표시. 그 외엔 힌트 없음.
+function getPromptTag(item) {
+  if (studyMode === 'kanji' && !item.kanji) return '(한자X)';
+  return '';
 }
 
 function renderQuizQuestion() {
@@ -83,13 +85,13 @@ function renderQuizQuestion() {
   const item = quizQueue[quizIndex];
   const choices = buildChoices(item);
   const promptText = getPromptText(item);
-  const promptHint = getPromptHint(item);
+  const promptTag = getPromptTag(item);
 
   content.innerHTML = `
     <div style="color:var(--ink-soft); font-size:0.9rem; margin-bottom:10px;">${quizIndex + 1} / ${quizQueue.length}</div>
     <div class="quiz-question">
       ${item.pos ? `<div style="color:var(--ink-faint); font-size:0.8rem; margin-bottom:4px;">${item.pos}</div>` : ''}
-      <div class="prompt">${promptText}${promptHint ? ` <span style="color:var(--ink-faint); font-size:1rem;">(${promptHint})</span>` : ''}</div>
+      <div class="prompt">${promptText}${promptTag ? ` <span style="color:var(--ink-faint); font-size:1rem;">${promptTag}</span>` : ''}</div>
       <div class="quiz-choices">
         ${choices.map(c => `<button class="choice-btn" data-value="${encodeURIComponent(c)}">${c}</button>`).join('')}
       </div>
