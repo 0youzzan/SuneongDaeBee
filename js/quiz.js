@@ -1,43 +1,136 @@
+// ---------- 상태 ----------
+
+let testType = 'objective';   // 'objective' | 'subjective'
+let displayMode = 'all';      // 객관식일 때: 'all' | 'kana' | 'kanji'
+let inputMode = 'kana';       // 주관식일 때: 'kana' | 'kanji'
+let scope = 'all';            // 'all' | 'classify' | 'daily'
+let selectedCategory = null;  // scope === 'classify' 일 때 선택된 품사
+let selectedUnit = null;      // scope === 'daily' 일 때 선택된 단원(문자열)
+
+let classifyGroups = {};
+let dailyGroups = {};
+
 let quizQueue = [];
 let quizIndex = 0;
 let quizScore = 0;
-let studyMode = 'all'; // 'all' | 'kana' | 'kanji'
 
-function getQuizPool() {
-  return vocabList;
+// ---------- 그룹 만들기 (분류학습 / 일일학습 범위용) ----------
+
+function buildGroups() {
+  classifyGroups = {};
+  vocabList.forEach(item => {
+    const key = item.pos && item.pos.trim() ? item.pos.trim() : '기타';
+    (classifyGroups[key] = classifyGroups[key] || []).push(item);
+  });
+
+  dailyGroups = {};
+  vocabList.forEach(item => {
+    const key = (item.unit === null || item.unit === undefined) ? '미분류' : String(item.unit);
+    (dailyGroups[key] = dailyGroups[key] || []).push(item);
+  });
 }
 
-function updateModeNote() {
-  const noteEl = document.getElementById('mode-note');
-  if (studyMode === 'kana') {
-    noteEl.textContent = '한자 없이 히라가나만 문제로 나와요.';
-  } else if (studyMode === 'kanji') {
-    noteEl.textContent = '한자만 문제로 나와요. 한자가 없는 단어는 히라가나 옆에 (한자X)로 표시돼요.';
-  } else {
-    noteEl.textContent = '히라가나와 한자를 같이 문제로 보여줘요.';
+function renderClassifyButtons() {
+  const categories = Object.keys(classifyGroups).sort((a, b) => classifyGroups[b].length - classifyGroups[a].length);
+  const container = document.getElementById('classify-scope-buttons');
+  container.innerHTML = categories.map(cat => `
+    <button class="picker-btn" data-cat="${encodeURIComponent(cat)}">${cat}<span class="count">${classifyGroups[cat].length}개</span></button>
+  `).join('');
+
+  container.querySelectorAll('.picker-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      container.querySelectorAll('.picker-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      selectedCategory = decodeURIComponent(btn.dataset.cat);
+      updateScopeNote();
+    });
+  });
+}
+
+function renderDailyButtons() {
+  const keys = Object.keys(dailyGroups);
+  const numeric = keys.filter(k => k !== '미분류').map(Number).sort((a, b) => a - b);
+  const container = document.getElementById('daily-scope-buttons');
+
+  let html = numeric.map(n => `
+    <button class="picker-btn" data-unit="${n}">${n}단원<span class="count">${dailyGroups[String(n)].length}개</span></button>
+  `).join('');
+
+  if (dailyGroups['미분류']) {
+    html += `<button class="picker-btn" data-unit="미분류">단원 없음<span class="count">${dailyGroups['미분류'].length}개</span></button>`;
   }
+
+  container.innerHTML = html;
+
+  container.querySelectorAll('.picker-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      container.querySelectorAll('.picker-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      selectedUnit = btn.dataset.unit;
+      updateScopeNote();
+    });
+  });
 }
 
-function showContent(hasData) {
-  updateModeNote();
-  document.getElementById('quiz-word-count').textContent = getQuizPool().length;
-  document.getElementById('quiz-empty').classList.toggle('hidden', hasData);
-  document.getElementById('quiz-setup').classList.toggle('hidden', !hasData);
+function getCurrentPool() {
+  if (scope === 'all') return vocabList;
+  if (scope === 'classify') return selectedCategory ? classifyGroups[selectedCategory] : [];
+  if (scope === 'daily') return selectedUnit ? dailyGroups[selectedUnit] : [];
+  return [];
 }
 
-document.getElementById('start-quiz-btn').addEventListener('click', startQuiz);
+function updateScopeNote() {
+  const pool = getCurrentPool();
+  document.getElementById('quiz-word-count').textContent = pool.length;
+  document.getElementById('start-quiz-btn').disabled = pool.length === 0;
+}
 
-document.querySelectorAll('#mode-toggle .timer-opt').forEach(btn => {
+// ---------- 유형 / 표시-입력 방식 / 범위 토글 ----------
+
+document.querySelectorAll('#type-toggle .timer-opt').forEach(btn => {
   btn.addEventListener('click', () => {
-    document.querySelectorAll('#mode-toggle .timer-opt').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('#type-toggle .timer-opt').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
-    studyMode = btn.dataset.mode;
-    showContent(vocabList.length > 0);
+    testType = btn.dataset.type;
+    document.getElementById('objective-mode-section').classList.toggle('hidden', testType !== 'objective');
+    document.getElementById('subjective-mode-section').classList.toggle('hidden', testType !== 'subjective');
   });
 });
 
+document.querySelectorAll('#display-mode-toggle .timer-opt').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('#display-mode-toggle .timer-opt').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    displayMode = btn.dataset.mode;
+  });
+});
+
+document.querySelectorAll('#input-mode-toggle .timer-opt').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('#input-mode-toggle .timer-opt').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    inputMode = btn.dataset.mode;
+  });
+});
+
+document.querySelectorAll('#scope-toggle .timer-opt').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('#scope-toggle .timer-opt').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    scope = btn.dataset.scope;
+    document.getElementById('classify-scope-picker').classList.toggle('hidden', scope !== 'classify');
+    document.getElementById('daily-scope-picker').classList.toggle('hidden', scope !== 'daily');
+    if (scope === 'all') { selectedCategory = null; selectedUnit = null; }
+    updateScopeNote();
+  });
+});
+
+// ---------- 시험 시작 / 진행 ----------
+
+document.getElementById('start-quiz-btn').addEventListener('click', startQuiz);
+
 function startQuiz() {
-  const pool = getQuizPool();
+  const pool = getCurrentPool();
   if (pool.length === 0) return;
   quizQueue = [...pool].sort(() => Math.random() - 0.5);
   quizIndex = 0;
@@ -54,16 +147,14 @@ function buildChoices(correctItem) {
   return choices.sort(() => Math.random() - 0.5);
 }
 
-// 문제로 보여줄 텍스트를 모드에 맞게 만든다. (힌트 없이 그 모드에 맞는 것만 보여준다)
-function getPromptText(item) {
-  if (studyMode === 'kana') return item.word;
-  if (studyMode === 'kanji') return item.kanji || item.word;
+function getObjPromptText(item) {
+  if (displayMode === 'kana') return item.word;
+  if (displayMode === 'kanji') return item.kanji || item.word;
   return item.kanji ? `${item.word} (${item.kanji})` : item.word; // all
 }
 
-// 한자 모드인데 한자가 없을 때만 (한자X) 표시. 그 외엔 힌트 없음.
-function getPromptTag(item) {
-  if (studyMode === 'kanji' && !item.kanji) return '(한자X)';
+function getObjPromptTag(item) {
+  if (displayMode === 'kanji' && !item.kanji) return '(한자X)';
   return '';
 }
 
@@ -75,20 +166,37 @@ function renderQuizQuestion() {
       <div class="quiz-result">
         <div class="score">${quizScore} / ${quizQueue.length}</div>
         <p style="color:var(--ink-soft)">시험이 끝났어요.</p>
-        <button class="btn primary" id="retry-quiz-btn">다시 풀기</button>
+        <div class="btn-row" style="justify-content:center;">
+          <button class="btn primary" id="retry-quiz-btn">같은 범위로 다시</button>
+          <button class="btn" id="change-setup-btn">범위/유형 바꾸기</button>
+        </div>
       </div>
     `;
     document.getElementById('retry-quiz-btn').addEventListener('click', startQuiz);
+    document.getElementById('change-setup-btn').addEventListener('click', () => {
+      document.getElementById('quiz-content').classList.add('hidden');
+      document.getElementById('quiz-setup').classList.remove('hidden');
+    });
     return;
   }
 
   const item = quizQueue[quizIndex];
+  if (testType === 'objective') {
+    renderObjectiveQuestion(content, item);
+  } else {
+    renderSubjectiveQuestion(content, item);
+  }
+}
+
+// ---------- 객관식 ----------
+
+function renderObjectiveQuestion(content, item) {
   const choices = buildChoices(item);
-  const promptText = getPromptText(item);
-  const promptTag = getPromptTag(item);
+  const promptText = getObjPromptText(item);
+  const promptTag = getObjPromptTag(item);
 
   content.innerHTML = `
-    <div style="color:var(--ink-soft); font-size:0.9rem; margin-bottom:10px;">${quizIndex + 1} / ${quizQueue.length}</div>
+    <div class="status" style="margin-bottom:10px;">${quizIndex + 1} / ${quizQueue.length}</div>
     <div class="quiz-question">
       ${item.pos ? `<div style="color:var(--ink-faint); font-size:0.8rem; margin-bottom:4px;">${item.pos}</div>` : ''}
       <div class="prompt">${promptText}${promptTag ? ` <span style="color:var(--ink-faint); font-size:1rem;">${promptTag}</span>` : ''}</div>
@@ -119,8 +227,88 @@ function renderQuizQuestion() {
   });
 }
 
+// ---------- 주관식 ----------
+
+function renderSubjectiveQuestion(content, item) {
+  const useKanji = inputMode === 'kanji';
+  const targetLabel = useKanji ? '한자' : '히라가나';
+  const hasKanji = !!item.kanji;
+
+  let noteHtml = '';
+  if (useKanji && !hasKanji) {
+    noteHtml = `<div class="status" style="margin-bottom:10px;">이 단어는 한자가 없어요 — 히라가나로 입력해도 정답이에요.</div>`;
+  }
+
+  content.innerHTML = `
+    <div class="status" style="margin-bottom:10px;">${quizIndex + 1} / ${quizQueue.length}</div>
+    <div class="quiz-question">
+      ${item.pos ? `<div style="color:var(--ink-faint); font-size:0.8rem; margin-bottom:4px;">${item.pos}</div>` : ''}
+      <div class="prompt">${item.meaning}</div>
+      ${noteHtml}
+      <input type="text" id="subjective-input" class="btn" style="width:100%; font-size:1.1rem; padding:12px; margin-top:14px;"
+        placeholder="${targetLabel}로 입력하세요" autocomplete="off" autocapitalize="off" spellcheck="false">
+      <div class="btn-row mt-24">
+        <button class="btn primary" id="submit-answer-btn">정답 확인</button>
+      </div>
+      <div id="subjective-feedback" style="margin-top:14px;"></div>
+    </div>
+  `;
+
+  const inputEl = document.getElementById('subjective-input');
+
+  // 히라가나 입력일 때만 로마자 자동변환을 붙인다.
+  // 한자 입력은 기기의 일본어 IME에 그대로 맡긴다 (자동변환이 IME 조합을 방해할 수 있어서).
+  if (!useKanji && window.wanakana) {
+    wanakana.bind(inputEl);
+  }
+  inputEl.focus();
+
+  function checkAnswer() {
+    const raw = inputEl.value.trim();
+    if (!raw) return;
+
+    let correct;
+    if (useKanji) {
+      const target = item.kanji || item.word;
+      correct = raw === target;
+    } else {
+      const normInput = window.wanakana ? wanakana.toHiragana(raw) : raw;
+      const normTarget = window.wanakana ? wanakana.toHiragana(item.word) : item.word;
+      correct = normInput === normTarget;
+    }
+
+    if (correct) quizScore++;
+
+    inputEl.disabled = true;
+    document.getElementById('submit-answer-btn').disabled = true;
+
+    const answerLine = item.kanji ? `${item.word} (${item.kanji})` : item.word;
+
+    document.getElementById('subjective-feedback').innerHTML = `
+      <div style="color:${correct ? '#4a7c52' : 'var(--csat)'}; font-weight:600; margin-bottom:6px;">${correct ? '정답이에요!' : '오답이에요'}</div>
+      <div style="color:var(--ink-soft); font-size:0.92rem;">정답: ${answerLine} — ${item.meaning}</div>
+      <button class="btn primary mt-24" id="next-question-btn">다음 문제</button>
+    `;
+    document.getElementById('next-question-btn').addEventListener('click', () => {
+      quizIndex++;
+      renderQuizQuestion();
+    });
+  }
+
+  document.getElementById('submit-answer-btn').addEventListener('click', checkAnswer);
+  inputEl.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') { e.preventDefault(); checkAnswer(); }
+  });
+}
+
 // ---------- 시작 ----------
 
 loadVocabData('data-status')
-  .then(() => showContent(vocabList.length > 0))
-  .catch(() => showContent(false));
+  .then(() => {
+    if (vocabList.length === 0) return;
+    buildGroups();
+    renderClassifyButtons();
+    renderDailyButtons();
+    updateScopeNote();
+  })
+  .catch(() => {});
