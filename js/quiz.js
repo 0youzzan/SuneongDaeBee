@@ -3,9 +3,10 @@
 let testType = 'objective';   // 'objective' | 'subjective'
 let displayMode = 'all';      // 객관식일 때: 'all' | 'kana' | 'kanji'
 let inputMode = 'kana';       // 주관식일 때: 'kana' | 'kanji'
-let scope = 'all';            // 'all' | 'classify' | 'daily'
+let scope = 'all';            // 'all' | 'partial' | 'classify' | 'daily'
 let selectedCategory = null;  // scope === 'classify' 일 때 선택된 품사
 let selectedUnit = null;      // scope === 'daily' 일 때 선택된 단원(문자열)
+let partialCount = 20;        // scope === 'partial' 일 때 원하는 문제 개수
 
 let classifyGroups = {};
 let dailyGroups = {};
@@ -74,15 +75,25 @@ function renderDailyButtons() {
 
 function getCurrentPool() {
   if (scope === 'all') return vocabList;
+  if (scope === 'partial') {
+    const n = Math.max(1, Math.min(partialCount, vocabList.length));
+    const shuffled = [...vocabList].sort(() => Math.random() - 0.5);
+    return shuffled.slice(0, n);
+  }
   if (scope === 'classify') return selectedCategory ? classifyGroups[selectedCategory] : [];
   if (scope === 'daily') return selectedUnit ? dailyGroups[selectedUnit] : [];
   return [];
 }
 
 function updateScopeNote() {
-  const pool = getCurrentPool();
-  document.getElementById('quiz-word-count').textContent = pool.length;
-  document.getElementById('start-quiz-btn').disabled = pool.length === 0;
+  let count;
+  if (scope === 'partial') {
+    count = Math.max(1, Math.min(partialCount, vocabList.length));
+  } else {
+    count = getCurrentPool().length;
+  }
+  document.getElementById('quiz-word-count').textContent = count;
+  document.getElementById('start-quiz-btn').disabled = count === 0;
 }
 
 // ---------- 유형 / 표시-입력 방식 / 범위 토글 ----------
@@ -118,11 +129,21 @@ document.querySelectorAll('#scope-toggle .timer-opt').forEach(btn => {
     document.querySelectorAll('#scope-toggle .timer-opt').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     scope = btn.dataset.scope;
+    document.getElementById('partial-scope-picker').classList.toggle('hidden', scope !== 'partial');
     document.getElementById('classify-scope-picker').classList.toggle('hidden', scope !== 'classify');
     document.getElementById('daily-scope-picker').classList.toggle('hidden', scope !== 'daily');
     if (scope === 'all') { selectedCategory = null; selectedUnit = null; }
     updateScopeNote();
   });
+});
+
+document.getElementById('partial-count-input').addEventListener('input', () => {
+  const input = document.getElementById('partial-count-input');
+  let val = parseInt(input.value, 10);
+  if (Number.isNaN(val) || val < 1) val = 1;
+  if (vocabList.length > 0 && val > vocabList.length) val = vocabList.length;
+  partialCount = val;
+  updateScopeNote();
 });
 
 // ---------- 시험 시작 / 진행 ----------
@@ -137,8 +158,16 @@ function startQuiz() {
   quizScore = 0;
   document.getElementById('quiz-setup').classList.add('hidden');
   document.getElementById('quiz-content').classList.remove('hidden');
+  document.getElementById('quiz-active-bar').classList.remove('hidden');
   renderQuizQuestion();
 }
+
+document.getElementById('exit-quiz-btn').addEventListener('click', () => {
+  if (!confirm('정말 시험을 종료할까요? 지금까지의 진행 상황은 저장되지 않아요.')) return;
+  document.getElementById('quiz-content').classList.add('hidden');
+  document.getElementById('quiz-active-bar').classList.add('hidden');
+  document.getElementById('quiz-setup').classList.remove('hidden');
+});
 
 function buildChoices(correctItem) {
   const others = vocabList.filter(v => v !== correctItem);
@@ -162,6 +191,7 @@ function renderQuizQuestion() {
   const content = document.getElementById('quiz-content');
 
   if (quizIndex >= quizQueue.length) {
+    document.getElementById('quiz-active-bar').classList.add('hidden');
     content.innerHTML = `
       <div class="quiz-result">
         <div class="score">${quizScore} / ${quizQueue.length}</div>

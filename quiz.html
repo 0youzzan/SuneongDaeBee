@@ -60,10 +60,15 @@
     <p style="font-weight:600; color:var(--ink-soft); margin-bottom:8px;">범위</p>
     <div class="timer-select" id="scope-toggle">
       <button class="timer-opt active" data-scope="all">전체</button>
+      <button class="timer-opt" data-scope="partial">부분</button>
       <button class="timer-opt" data-scope="classify">분류학습</button>
       <button class="timer-opt" data-scope="daily">일일학습</button>
     </div>
 
+    <div id="partial-scope-picker" class="hidden" style="margin-top:14px;">
+      <p class="status">원하는 문제 개수를 입력하세요.</p>
+      <input type="number" id="partial-count-input" class="btn" style="width:120px;" min="1" value="20">
+    </div>
     <div id="classify-scope-picker" class="hidden" style="margin-top:14px;">
       <p class="status">문법(품사)을 선택하세요.</p>
       <div class="picker-grid" id="classify-scope-buttons"></div>
@@ -77,6 +82,9 @@
     <button class="btn primary" id="start-quiz-btn">시험 시작</button>
   </div>
 
+  <div class="btn-row hidden" id="quiz-active-bar" style="justify-content:flex-end; margin-bottom:10px;">
+    <button class="btn" id="exit-quiz-btn">종료하기</button>
+  </div>
   <div id="quiz-content" class="hidden"></div>
 
 </div>
