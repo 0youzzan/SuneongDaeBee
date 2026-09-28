@@ -9,6 +9,10 @@
 :root{--page-accent:var(--vocab);}
 .picker-btn.active{border-color:var(--vocab);background:var(--vocab-soft);font-weight:600;}
 .timer-opt:disabled{opacity:0.4;cursor:not-allowed;}
+.seg-row{display:flex;align-items:center;gap:12px;margin-bottom:10px;}
+.seg-cap{flex:0 0 68px;font-size:0.85rem;color:var(--ink-soft);}
+.seg{display:flex;gap:8px;flex-wrap:wrap;}
+.seg .timer-opt{padding:8px 16px;}
 </style>
 </head>
 <body>
@@ -36,15 +40,25 @@
       <button class="timer-opt" data-type="subjective">주관식</button>
     </div>
 
-    <!-- 출제 방향 -->
+    <!-- 출제 방향: 문제로 보여줄 것 / 맞힐 것 -->
     <p style="font-weight:600; color:var(--ink-soft); margin-bottom:8px;">출제 방향</p>
-    <div class="timer-select" id="direction-toggle">
-      <button class="timer-opt" data-dir="meaning-kana">뜻 보고 히라가나 맞추기</button>
-      <button class="timer-opt active" data-dir="kana-meaning">히라가나 보고 뜻 맞추기</button>
-      <button class="timer-opt" data-dir="kanji-meaning">한자 보고 뜻 맞추기</button>
-      <button class="timer-opt" data-dir="kanji-kana">한자 보고 히라가나 맞추기</button>
-      <button class="timer-opt" data-dir="kana-kanji">히라가나 보고 한자 맞추기</button>
+    <div class="seg-row">
+      <span class="seg-cap">보여줄 것</span>
+      <div class="seg" id="prompt-toggle">
+        <button class="timer-opt" data-key="meaning">뜻</button>
+        <button class="timer-opt active" data-key="kana">히라가나</button>
+        <button class="timer-opt" data-key="kanji">한자</button>
+      </div>
     </div>
+    <div class="seg-row">
+      <span class="seg-cap">맞힐 것</span>
+      <div class="seg" id="answer-toggle">
+        <button class="timer-opt active" data-key="meaning">뜻</button>
+        <button class="timer-opt" data-key="kana">히라가나</button>
+        <button class="timer-opt" data-key="kanji">한자</button>
+      </div>
+    </div>
+    <div id="direction-summary" style="font-weight:600; margin:10px 0 4px;"></div>
     <div class="status" id="mode-note" style="margin-bottom:20px;"></div>
 
     <!-- 범위 -->

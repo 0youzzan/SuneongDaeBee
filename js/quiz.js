@@ -1,7 +1,9 @@
 // ---------- 상태 ----------
 
 let testType = 'objective';   // 'objective' | 'subjective'
-let direction = 'kana-meaning'; // 출제 방향 (아래 DIRECTIONS 참고)
+let promptKey = 'kana';         // 문제로 보여줄 것: 'meaning' | 'kana' | 'kanji'
+let answerKey = 'meaning';      // 맞혀야 하는 것:   'meaning' | 'kana' | 'kanji'
+let direction = 'kana-meaning'; // promptKey + '-' + answerKey (아래 DIRECTIONS 참고)
 let scope = 'all';            // 'all' | 'partial' | 'classify' | 'daily'
 let selectedCategory = null;  // scope === 'classify' 일 때 선택된 품사
 let selectedUnit = null;      // scope === 'daily' 일 때 선택된 단원(문자열)
@@ -23,6 +25,7 @@ const DIRECTIONS = {
   'kanji-meaning': { prompt: 'kanji',   answer: 'meaning' },
   'kanji-kana':    { prompt: 'kanji',   answer: 'kana' },
   'kana-kanji':    { prompt: 'kana',    answer: 'kanji' },
+  'meaning-kanji': { prompt: 'meaning', answer: 'kanji' },
 };
 
 function needsKanji() {
@@ -160,12 +163,38 @@ function updateModeNote() {
   document.getElementById('mode-note').textContent = notes.join(' ');
 }
 
+const KEY_LABELS = { meaning: '뜻', kana: '히라가나', kanji: '한자' };
+
+// 버튼을 눌렀을 때 결과가 될 (문제, 정답) 조합. 문제와 정답이 같아지면 서로 맞바꾼다.
+function nextPair(kind, k) {
+  if (kind === 'prompt') return k === answerKey ? [k, promptKey] : [k, answerKey];
+  return k === promptKey ? [answerKey, k] : [promptKey, k];
+}
+
+function isValidPair(p, a) {
+  if (p === a) return false;
+  // 한국어 뜻을 직접 입력받아 채점하지는 않으므로, 주관식에서는 뜻을 정답으로 못 쓴다.
+  if (testType === 'subjective' && a === 'meaning') return false;
+  return true;
+}
+
+function applyPair(p, a) {
+  promptKey = p;
+  answerKey = a;
+  direction = p + '-' + a;
+}
+
 function updateDirectionButtons() {
-  document.querySelectorAll('#direction-toggle .timer-opt').forEach(btn => {
-    const d = DIRECTIONS[btn.dataset.dir];
-    btn.disabled = testType === 'subjective' && d.answer === 'meaning';
-    btn.classList.toggle('active', btn.dataset.dir === direction);
+  [['prompt', '#prompt-toggle', promptKey], ['answer', '#answer-toggle', answerKey]].forEach(([kind, sel, current]) => {
+    document.querySelectorAll(sel + ' .timer-opt').forEach(btn => {
+      const k = btn.dataset.key;
+      const [p, a] = nextPair(kind, k);
+      btn.classList.toggle('active', k === current);
+      btn.disabled = k !== current && !isValidPair(p, a);
+    });
   });
+  document.getElementById('direction-summary').textContent =
+    `${KEY_LABELS[promptKey]} 보고 ${KEY_LABELS[answerKey]} 맞추기`;
 }
 
 // ---------- 유형 / 출제 방향 / 범위 토글 ----------
@@ -175,9 +204,12 @@ document.querySelectorAll('#type-toggle .timer-opt').forEach(btn => {
     document.querySelectorAll('#type-toggle .timer-opt').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     testType = btn.dataset.type;
-    // 주관식에서는 '뜻'을 답으로 하는 방향을 쓸 수 없으므로 기본 방향으로 바꾼다.
-    if (testType === 'subjective' && DIRECTIONS[direction].answer === 'meaning') {
-      direction = 'meaning-kana';
+    // 주관식에서는 '뜻'을 정답으로 못 쓰므로, 정답을 히라가나로 바꾼다.
+    if (testType === 'subjective' && !isValidPair(promptKey, answerKey)) {
+      let p = promptKey;
+      const a = 'kana';
+      if (p === a) p = 'meaning';
+      applyPair(p, a);
     }
     updateDirectionButtons();
     updateModeNote();
@@ -185,13 +217,17 @@ document.querySelectorAll('#type-toggle .timer-opt').forEach(btn => {
   });
 });
 
-document.querySelectorAll('#direction-toggle .timer-opt').forEach(btn => {
-  btn.addEventListener('click', () => {
-    if (btn.disabled) return;
-    direction = btn.dataset.dir;
-    updateDirectionButtons();
-    updateModeNote();
-    updateScopeNote();
+['prompt', 'answer'].forEach(kind => {
+  document.querySelectorAll(`#${kind}-toggle .timer-opt`).forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (btn.disabled) return;
+      const [p, a] = nextPair(kind, btn.dataset.key);
+      if (!isValidPair(p, a)) return;
+      applyPair(p, a);
+      updateDirectionButtons();
+      updateModeNote();
+      updateScopeNote();
+    });
   });
 });
 
