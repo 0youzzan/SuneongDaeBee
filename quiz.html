@@ -5,7 +5,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>어휘 테스트</title>
 <link rel="stylesheet" href="css/style.css">
-<style>:root{--page-accent:var(--vocab);}</style>
+<style>
+:root{--page-accent:var(--vocab);}
+.picker-btn.active{border-color:var(--vocab);background:var(--vocab-soft);font-weight:600;}
+.timer-opt:disabled{opacity:0.4;cursor:not-allowed;}
+</style>
 </head>
 <body>
 <div class="page">
@@ -32,29 +36,15 @@
       <button class="timer-opt" data-type="subjective">주관식</button>
     </div>
 
-    <!-- 표시 방식 (객관식) -->
-    <div id="objective-mode-section">
-      <p style="font-weight:600; color:var(--ink-soft); margin-bottom:8px;">표시 방식</p>
-      <div class="timer-select" id="display-mode-toggle">
-        <button class="timer-opt active" data-mode="all">모두</button>
-        <button class="timer-opt" data-mode="kana">히라가나만</button>
-        <button class="timer-opt" data-mode="kanji">한자만</button>
-      </div>
+    <!-- 출제 방향 -->
+    <p style="font-weight:600; color:var(--ink-soft); margin-bottom:8px;">출제 방향</p>
+    <div class="timer-select" id="direction-toggle">
+      <button class="timer-opt" data-dir="meaning-kana">뜻 보고 히라가나 맞추기</button>
+      <button class="timer-opt active" data-dir="kana-meaning">히라가나 보고 뜻 맞추기</button>
+      <button class="timer-opt" data-dir="kanji-meaning">한자 보고 뜻 맞추기</button>
+      <button class="timer-opt" data-dir="kanji-kana">한자 보고 히라가나 맞추기</button>
+      <button class="timer-opt" data-dir="kana-kanji">히라가나 보고 한자 맞추기</button>
     </div>
-
-    <!-- 입력 방식 (주관식) -->
-    <div id="subjective-mode-section" class="hidden">
-      <p style="font-weight:600; color:var(--ink-soft); margin-bottom:8px;">입력 방식</p>
-      <div class="timer-select" id="input-mode-toggle">
-        <button class="timer-opt active" data-mode="kana">히라가나로 입력</button>
-        <button class="timer-opt" data-mode="kanji">한자로 입력</button>
-      </div>
-      <div class="status" style="margin-bottom:10px;" id="subjective-hint">
-        로마자로 타이핑하면 자동으로 히라가나로 바뀌어요 (예: tabe → たべ). 
-        한자는 기기에 일본어 키보드가 있어야 입력할 수 있어요.
-      </div>
-    </div>
-
     <div class="status" id="mode-note" style="margin-bottom:20px;"></div>
 
     <!-- 범위 -->
