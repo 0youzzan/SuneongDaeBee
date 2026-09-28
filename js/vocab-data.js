@@ -1,7 +1,7 @@
 // 여러 페이지(어휘학습, 어휘테스트 등)에서 공통으로 쓰는 단어 데이터 로더.
 // csv-parser.js 보다 먼저 로드되면 안 되고, 반드시 뒤에 <script>로 불러와야 한다.
 
-const VOCAB_CSV_PATH = 'vocab.csv';
+const VOCAB_CSV_PATH = 'data/vocab.csv';
 let vocabList = [];
 
 // data/vocab.csv 를 불러와 vocabList 배열을 채운다.
@@ -18,10 +18,18 @@ async function loadVocabData(statusElId) {
     vocabList = csvToVocabList(text);
   } catch (e) {
     vocabList = [];
-    if (statusEl) statusEl.textContent = `data/vocab.csv 파일을 불러오지 못했어요. (${e.message})`;
+    if (statusEl) {
+      statusEl.textContent = `data/vocab.csv 파일을 불러오지 못했어요. (${e.message})`;
+      const box = statusEl.closest('.data-box');
+      if (box) box.classList.remove('hidden');
+    }
     throw e;
   }
 
-  if (statusEl) statusEl.textContent = `data/vocab.csv에서 단어 ${vocabList.length}개를 불러왔어요.`;
+  // 성공하면 안내 박스를 숨긴다 (실패했을 때만 메시지가 보인다).
+  if (statusEl) {
+    const box = statusEl.closest('.data-box');
+    if (box) box.classList.add('hidden');
+  }
   return vocabList;
 }
