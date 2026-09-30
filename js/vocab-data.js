@@ -1,7 +1,7 @@
 // 여러 페이지(어휘학습, 어휘테스트 등)에서 공통으로 쓰는 단어 데이터 로더.
 // csv-parser.js 보다 먼저 로드되면 안 되고, 반드시 뒤에 <script>로 불러와야 한다.
 
-const VOCAB_CSV_PATH = 'data/vocab.csv';
+const VOCAB_CSV_PATH = 'vocab.csv';
 let vocabList = [];
 
 // data/vocab.csv 를 불러와 vocabList 배열을 채운다.

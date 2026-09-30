@@ -483,6 +483,8 @@ a { color: inherit; }
   align-items: center;
   gap: 10px;
   margin-bottom: 18px;
+  cursor: pointer;
+  width: fit-content;
 }
 
 .switch {
