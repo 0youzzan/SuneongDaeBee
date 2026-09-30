@@ -334,6 +334,14 @@ function renderQuizQuestion() {
 
 // ---------- 객관식 ----------
 
+// 자동재생이 켜져 있어도, 정답이 히라가나(answerKey === 'kana')인 문제는
+// 발음을 들려주면 답을 그대로 알려주는 셈이라 자동재생을 건너뛴다.
+function maybeAutoSpeak(item) {
+  if (!ttsEnabled) return;
+  if (answerKey === 'kana') return;
+  speakJapanese(item.word);
+}
+
 function renderObjectiveQuestion(content, item) {
   const d = DIRECTIONS[direction];
   const correctValue = getField(item, d.answer);
@@ -343,12 +351,15 @@ function renderObjectiveQuestion(content, item) {
     <div class="status" style="margin-bottom:10px;">${quizIndex + 1} / ${quizQueue.length}</div>
     <div class="quiz-question">
       ${item.pos ? `<div style="color:var(--ink-faint); font-size:0.8rem; margin-bottom:4px;">${item.pos}</div>` : ''}
-      <div class="prompt">${getPromptText(item)}</div>
+      <div class="prompt">${getPromptText(item)} <button class="btn speak-btn" type="button" title="발음 듣기">🔊</button></div>
       <div class="quiz-choices">
         ${choices.map(c => `<button class="choice-btn" data-value="${encodeURIComponent(c)}">${c}</button>`).join('')}
       </div>
     </div>
   `;
+
+  content.querySelector('.speak-btn').addEventListener('click', () => speakJapanese(item.word));
+  maybeAutoSpeak(item);
 
   content.querySelectorAll('.choice-btn').forEach(btn => {
     btn.addEventListener('click', () => {
@@ -382,7 +393,7 @@ function renderSubjectiveQuestion(content, item) {
     <div class="status" style="margin-bottom:10px;">${quizIndex + 1} / ${quizQueue.length}</div>
     <div class="quiz-question">
       ${item.pos ? `<div style="color:var(--ink-faint); font-size:0.8rem; margin-bottom:4px;">${item.pos}</div>` : ''}
-      <div class="prompt">${getPromptText(item)}</div>
+      <div class="prompt">${getPromptText(item)} <button class="btn speak-btn" type="button" title="발음 듣기">🔊</button></div>
       <input type="text" id="subjective-input" class="btn" style="width:100%; font-size:1.1rem; padding:12px; margin-top:14px;"
         placeholder="${targetLabel}로 입력하세요" autocomplete="off" autocapitalize="off" spellcheck="false">
       <div class="btn-row mt-24">
@@ -391,6 +402,9 @@ function renderSubjectiveQuestion(content, item) {
       <div id="subjective-feedback" style="margin-top:14px;"></div>
     </div>
   `;
+
+  content.querySelector('.speak-btn').addEventListener('click', () => speakJapanese(item.word));
+  maybeAutoSpeak(item);
 
   const inputEl = document.getElementById('subjective-input');
 
@@ -433,6 +447,8 @@ function renderSubjectiveQuestion(content, item) {
 }
 
 // ---------- 시작 ----------
+
+initTtsToggle('tts-toggle');
 
 loadVocabData('data-status')
   .then(() => {

@@ -51,6 +51,7 @@ function createFlashcardWidget() {
     </div>
     <div class="btn-row">
       <button class="btn prev-btn">이전</button>
+      <button class="btn speak-btn" type="button" title="발음 듣기">🔊</button>
       <button class="btn shuffle-btn">섞기</button>
       <button class="btn next-btn">다음</button>
     </div>
@@ -66,6 +67,7 @@ function createFlashcardWidget() {
   const prevBtn = root.querySelector('.prev-btn');
   const nextBtn = root.querySelector('.next-btn');
   const shuffleBtn = root.querySelector('.shuffle-btn');
+  const speakBtn = root.querySelector('.speak-btn');
 
   function render() {
     if (state.deck.length === 0) return;
@@ -75,6 +77,8 @@ function createFlashcardWidget() {
     wordEl.textContent = c.main;
     subEl.textContent = c.sub;
     progressEl.textContent = `${state.index + 1} / ${state.deck.length}`;
+    // 앞면(문제)이 보일 때, 자동재생이 켜져 있으면 실제 발음(히라가나)을 읽어준다.
+    if (state.showingFront && ttsEnabled) speakJapanese(item.word);
   }
 
   function load(words) {
@@ -111,6 +115,11 @@ function createFlashcardWidget() {
     state.index = 0;
     state.showingFront = true;
     render();
+  });
+
+  speakBtn.addEventListener('click', () => {
+    if (state.deck.length === 0) return;
+    speakJapanese(state.deck[state.index].word);
   });
 
   const widget = { el: root, load, render };
@@ -264,6 +273,7 @@ document.getElementById('daily-back-btn').addEventListener('click', () => {
 // ---------- 시작 ----------
 
 updateModeNote();
+initTtsToggle('tts-toggle');
 
 loadVocabData('data-status')
   .then(() => {
