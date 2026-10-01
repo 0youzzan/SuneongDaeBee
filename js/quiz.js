@@ -350,7 +350,6 @@ function renderObjectiveQuestion(content, item) {
   content.innerHTML = `
     <div class="status" style="margin-bottom:10px;">${quizIndex + 1} / ${quizQueue.length}</div>
     <div class="quiz-question">
-      ${item.pos ? `<div style="color:var(--ink-faint); font-size:0.8rem; margin-bottom:4px;">${item.pos}</div>` : ''}
       <div class="prompt">${getPromptText(item)} <button class="btn speak-btn" type="button" title="발음 듣기">🔊</button></div>
       <div class="quiz-choices">
         ${choices.map(c => `<button class="choice-btn" data-value="${encodeURIComponent(c)}">${c}</button>`).join('')}
@@ -392,7 +391,6 @@ function renderSubjectiveQuestion(content, item) {
   content.innerHTML = `
     <div class="status" style="margin-bottom:10px;">${quizIndex + 1} / ${quizQueue.length}</div>
     <div class="quiz-question">
-      ${item.pos ? `<div style="color:var(--ink-faint); font-size:0.8rem; margin-bottom:4px;">${item.pos}</div>` : ''}
       <div class="prompt">${getPromptText(item)} <button class="btn speak-btn" type="button" title="발음 듣기">🔊</button></div>
       <input type="text" id="subjective-input" class="btn" style="width:100%; font-size:1.1rem; padding:12px; margin-top:14px;"
         placeholder="${targetLabel}로 입력하세요" autocomplete="off" autocapitalize="off" spellcheck="false">
